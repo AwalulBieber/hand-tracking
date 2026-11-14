@@ -210,6 +210,61 @@
             return col;
         }
 
+        function getSpiderWebPositions() {
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            const points = [];
+            const addLine = (x1, y1, x2, y2, count, spread = 0.035) => {
+                for (let j = 0; j < count; j++) {
+                    const t = Math.random();
+                    points.push({
+                        x: x1 + (x2 - x1) * t + (Math.random() - 0.5) * spread,
+                        y: y1 + (y2 - y1) * t + (Math.random() - 0.5) * spread,
+                        z: (Math.random() - 0.5) * 0.12
+                    });
+                }
+            };
+
+            // Radial silk strands and curved concentric web rings.
+            const radius = 3.35;
+            const spokes = 12;
+            for (let s = 0; s < spokes; s++) {
+                const a = (Math.PI * 2 * s) / spokes;
+                addLine(0, 0, Math.cos(a) * radius, Math.sin(a) * radius, 420);
+            }
+            for (let ring = 1; ring <= 6; ring++) {
+                const r = (radius * ring) / 6;
+                let previous = null;
+                const steps = 180;
+                for (let j = 0; j <= steps; j++) {
+                    const a = (Math.PI * 2 * j) / steps;
+                    const wave = Math.sin(a * spokes / 2) * 0.10;
+                    const point = { x: Math.cos(a) * (r + wave), y: Math.sin(a) * (r + wave) };
+                    if (previous) addLine(previous.x, previous.y, point.x, point.y, 18, 0.025);
+                    previous = point;
+                }
+            }
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const p = points[Math.floor(Math.random() * points.length)];
+                pos[i * 3] = p.x;
+                pos[i * 3 + 1] = p.y;
+                pos[i * 3 + 2] = p.z;
+            }
+            return pos;
+        }
+
+        function getSpiderWebColors() {
+            const col = new Float32Array(PARTICLE_COUNT * 3);
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const blue = Math.random() > 0.48;
+                const glow = Math.random() * 0.35;
+                col[i * 3] = blue ? 0.08 + glow : 0.9 + glow * 0.25;
+                col[i * 3 + 1] = blue ? 0.35 + glow : 0.04 + glow * 0.12;
+                col[i * 3 + 2] = blue ? 1.0 : 0.08 + glow * 0.2;
+            }
+            return col;
+        }
+
         function getOkRingPositions() {
             const pos = new Float32Array(PARTICLE_COUNT * 3);
             for (let i = 0; i < PARTICLE_COUNT; i++) {
