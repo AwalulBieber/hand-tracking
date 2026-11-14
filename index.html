@@ -143,7 +143,22 @@
             return pos;
         }
 
-    
+
+
+        function getOkRingPositions() {
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const tube = (Math.random() - 0.5) * 0.32;
+                const radius = 2.35 + tube;
+                const depth = (Math.random() - 0.5) * 0.22;
+                pos[i * 3] = Math.cos(a) * radius;
+                pos[i * 3 + 1] = Math.sin(a) * radius;
+                pos[i * 3 + 2] = depth;
+            }
+            return pos;
+        }
+
         function getCloudColors() {
             const col = new Float32Array(PARTICLE_COUNT * 3);
             for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -190,18 +205,32 @@
             return col;
         }
 
+
+        function getOkRingColors() {
+            const col = new Float32Array(PARTICLE_COUNT * 3);
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const glow = Math.random();
+                col[i * 3] = 0.45 + glow * 0.45;
+                col[i * 3 + 1] = 0.05 + glow * 0.25;
+                col[i * 3 + 2] = 0.85 + glow * 0.15;
+            }
+            return col;
+        }
+
         const shapes = [
             getCloudPositions(),
             getHeartPositions(),
             getUranusPositions(),
-            getTextPositions()
+            getTextPositions(),
+            getOkRingPositions()
         ];
 
         const shapeColors = [
             getCloudColors(),
             getHeartColors(),
             getUranusColors(),
-            getTextColor()
+            getTextColor(),
+            getOkRingColors()
         ];
 
         function initThreeJS() {
@@ -276,6 +305,10 @@
                 particles.rotation.y += 0.01;
                 particles.rotation.x = THREE.MathUtils.lerp(particles.rotation.x, 0, 0.1);
                 particles.rotation.z = THREE.MathUtils.lerp(particles.rotation.z, 0, 0.1);
+            } else if (activeShapeIndex === 4) {
+                particles.rotation.z += 0.008;
+                particles.rotation.x = THREE.MathUtils.lerp(particles.rotation.x, 0, 0.1);
+                particles.rotation.y = THREE.MathUtils.lerp(particles.rotation.y, 0, 0.1);
             } else if (activeShapeIndex === 2) {
                 particles.rotation.y += 0.012;
                 particles.rotation.x += 0.008;
@@ -294,10 +327,16 @@
         }
 
         function detectGesture(landmarks) {
+            const thumbIndexDistance = Math.hypot(landmarks[4].x - landmarks[8].x, landmarks[4].y - landmarks[8].y);
             const isIndexOpen = landmarks[8].y < landmarks[6].y;
             const isMiddleOpen = landmarks[12].y < landmarks[10].y;
             const isRingOpen = landmarks[16].y < landmarks[14].y;
             const isPinkyOpen = landmarks[20].y < landmarks[18].y;
+
+            // OK sign: thumb and index fingertips touch while the other three fingers stay raised.
+            if (thumbIndexDistance < 0.055 && isMiddleOpen && isRingOpen && isPinkyOpen) {
+                return 4;
+            }
 
             if (isIndexOpen && isMiddleOpen && !isRingOpen && !isPinkyOpen) {
                 return 3;
