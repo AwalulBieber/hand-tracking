@@ -343,7 +343,8 @@
             getUranusPositions(),
             getTextPositions(),
             getOkRingPositions(),
-            getMiddleFingerPositions()
+            getMiddleFingerPositions(),
+            getSpiderWebPositions()
         ];
 
         const shapeColors = [
@@ -352,7 +353,8 @@
             getUranusColors(),
             getTextColor(),
             getOkRingColors(),
-            getMiddleFingerColors()
+            getMiddleFingerColors(),
+            getSpiderWebColors()
         ];
 
         function initThreeJS() {
@@ -458,6 +460,14 @@
             const isMiddleOpen = landmarks[12].y < landmarks[10].y;
             const isRingOpen = landmarks[16].y < landmarks[14].y;
             const isPinkyOpen = landmarks[20].y < landmarks[18].y;
+            const thumbTipToIndexBase = Math.hypot(landmarks[4].x - landmarks[5].x, landmarks[4].y - landmarks[5].y);
+            const thumbJointToIndexBase = Math.hypot(landmarks[3].x - landmarks[5].x, landmarks[3].y - landmarks[5].y);
+            const isThumbOpen = thumbTipToIndexBase > thumbJointToIndexBase * 1.12;
+
+            // Spider-Man web gesture: thumb, index and pinky open; middle and ring folded.
+            if (isThumbOpen && isIndexOpen && !isMiddleOpen && !isRingOpen && isPinkyOpen) {
+                return 6;
+            }
 
             // Middle-finger gesture: only the middle finger is raised.
             if (!isIndexOpen && isMiddleOpen && !isRingOpen && !isPinkyOpen) {
